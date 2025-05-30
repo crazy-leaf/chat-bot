@@ -40,6 +40,7 @@ const ChatWidget = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('connecting');
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -186,7 +187,8 @@ const ChatWidget = () => {
           p: 2,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          flexShrink: 0
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -214,7 +216,13 @@ const ChatWidget = () => {
       </Box>
 
       <Collapse in={!isMinimized}>
-        <Box sx={{ p: 1, bgcolor: 'grey.50', borderBottom: 1, borderColor: 'grey.200' }}>
+        <Box sx={{ 
+          p: 1, 
+          bgcolor: 'grey.50', 
+          borderBottom: 1, 
+          borderColor: 'grey.200',
+          flexShrink: 0
+        }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
             <Chip 
               label={getStatusText()}
@@ -227,12 +235,36 @@ const ChatWidget = () => {
             </Typography>
           </Box>
         </Box>
+
+        {/* Messages container with explicit height and scrolling */}
         <Box
+          ref={messagesContainerRef}
           sx={{
-            flex: 1,
-            overflow: 'auto',
+            height: 'calc(100% - 160px)', // Explicit height calculation
+            maxHeight: '300px',
+            overflowY: 'scroll',
+            overflowX: 'hidden',
+            bgcolor: 'grey.50',
             p: 1,
-            bgcolor: 'grey.50'
+            // Force scrollbar to always be visible
+            '&::-webkit-scrollbar': {
+              width: '8px',
+              display: 'block'
+            },
+            '&::-webkit-scrollbar-track': {
+              background: '#f1f1f1',
+              borderRadius: '4px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: '#888',
+              borderRadius: '4px',
+              '&:hover': {
+                background: '#555',
+              },
+            },
+            // Firefox
+            scrollbarWidth: 'auto',
+            scrollbarColor: '#888 #f1f1f1',
           }}
         >
           <List sx={{ p: 0 }}>
@@ -242,7 +274,8 @@ const ChatWidget = () => {
                 sx={{
                   display: 'flex',
                   justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start',
-                  p: 0.5
+                  p: 0.5,
+                  alignItems: 'flex-start'
                 }}
               >
                 <Box
@@ -258,12 +291,13 @@ const ChatWidget = () => {
                     sx={{
                       width: 32,
                       height: 32,
-                      bgcolor: message.sender === 'user' ? 'primary.main' : 'secondary.main'
+                      bgcolor: message.sender === 'user' ? 'primary.main' : 'secondary.main',
+                      flexShrink: 0
                     }}
                   >
                     {message.sender === 'user' ? <Person sx={{ fontSize: 18 }} /> : <SmartToy sx={{ fontSize: 18 }} />}
                   </Avatar>
-                  <Box>
+                  <Box sx={{ minWidth: 0 }}>
                     <Paper
                       elevation={1}
                       sx={{
@@ -271,10 +305,15 @@ const ChatWidget = () => {
                         bgcolor: message.sender === 'user' ? 'primary.main' : 'white',
                         color: message.sender === 'user' ? 'white' : 'text.primary',
                         borderRadius: 2,
-                        maxWidth: '100%'
+                        maxWidth: '100%',
+                        wordWrap: 'break-word',
+                        overflowWrap: 'break-word'
                       }}
                     >
-                      <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
+                      <Typography variant="body2" sx={{ 
+                        wordBreak: 'break-word',
+                        whiteSpace: 'pre-wrap'
+                      }}>
                         {message.text}
                       </Typography>
                     </Paper>
@@ -308,11 +347,18 @@ const ChatWidget = () => {
                 </Box>
               </ListItem>
             )}
-            <div ref={messagesEndRef} />
           </List>
+          {/* Scroll anchor */}
+          <div ref={messagesEndRef} style={{ height: '1px' }} />
         </Box>
+
         <Divider />
-        <Box sx={{ p: 1, bgcolor: 'grey.50', fontSize: '0.75rem' }}>
+        <Box sx={{ 
+          p: 1, 
+          bgcolor: 'grey.50', 
+          fontSize: '0.75rem',
+          flexShrink: 0
+        }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <Typography variant="caption" color="text.secondary">
               {messages.length - 1} messages stored locally
@@ -327,7 +373,13 @@ const ChatWidget = () => {
             </Typography>
           </Box>
         </Box>
-        <Box sx={{ p: 2, bgcolor: 'white', borderTop: 1, borderColor: 'grey.200' }}>
+        <Box sx={{ 
+          p: 2, 
+          bgcolor: 'white', 
+          borderTop: 1, 
+          borderColor: 'grey.200',
+          flexShrink: 0
+        }}>
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}>
             <TextField
               fullWidth
